@@ -49,20 +49,3 @@ impl Queue<T> {
     }
 }
 
-
-
-
-pub struct HashSet {
-    table1: Vec<Option<Box<Vehicle>>>,
-    table2: Vec<Option<Box<Vehicle>>>,
-}
-
-impl HashSet {
-    pub fn new(size: usize) -> Self {
-        const EMPTY_HASH_CELL: Option<Box<Vehicle>> = None;
-        HashSet {
-            table1: (0..size).map(|_| EMPTY_HASH_CELL).collect(),
-            table2: (0..size).map(|_| EMPTY_HASH_CELL).collect(),
-        }
-    }
-}
