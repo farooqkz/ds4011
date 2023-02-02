@@ -5,14 +5,14 @@ use crate::consts::*;
 
 pub struct Vehicle {
     number: usize,
-    name: String,
+    pub name: String,
     max_capacity: usize,
     min_capacity: usize,
-    enabled: bool,
-    price: usize,
-    time_per_round: usize,
-    onboard: Vec<Option<Customer>>,
-    number_of_onboard_customers: usize,
+    pub enabled: bool,
+    pub price: usize,
+    pub time_per_round: usize,
+    pub onboard: Vec<Option<Customer>>,
+    pub number_of_onboard_customers: usize,
     queue: Queue<Customer>,
 }
 
@@ -35,18 +35,18 @@ impl Vehicle {
     }
 
     pub fn add_customer(&mut self, customer: crate::customer::Customer) -> Result<usize, &str> {
-        if self.queue.elemnents_n() >= self.max_capacity {
+        if self.queue.elements_n() >= self.max_capacity {
             return Err("No space left on vehicle");
         }
         self.queue.enqueue(customer);
-        Ok(self.queue.elemnents_n())
+        Ok(self.queue.elements_n())
     }
 
     pub fn run(&mut self) -> Result<usize, &str> {
-        if self.queue.elemnents_n() < self.min_capacity {
+        if self.queue.elements_n() < self.min_capacity {
             return Err("No enough customers");
         }
-        let t: usize = self.queue.elements_n() * MOVE_TIME * 2;
+        let t: usize = self.queue.elements_n() * (VEHICLE_GET_OFF_TIME + VEHICLE_GET_ON_TIME);
         self.queue.empty();
         Ok(t)
     }

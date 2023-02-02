@@ -49,3 +49,58 @@ impl Queue<T> {
     }
 }
 
+pub struct VehicleSet {
+    vehicles: Vec<Option<Vec<Vehicle>>>,
+}
+
+impl VehicleSet {
+    pub fn new() -> Self {
+        const NOTHING: Option<Vec<Vehicle>> = None;
+        VehicleSet {
+            vehicles: (0..26).map(|_| NOTHING).collect(),
+        }
+    }
+
+    pub fn add(&mut self, vehicle: Vehicle) -> Result<bool, &str> {
+        if let Ok(place) = usize::from_str_radix(vehicle.name.split_at(1).0, 36) {
+            place -= 10;
+            if let Some(cell) = self.vehicles[place] {
+                let mut in_there: bool = false;
+                for v in cell.iter() {
+                    if v.name == vehicle.name {
+                        in_there = true;
+                    }
+                }
+                if in_there {
+                    return Ok(false);
+                } else {
+                    cell.push(vehicle);
+                    return Ok(true);
+                }
+            } else {
+                let mut v: Vec<Vehicle> = vec![];
+                v.push(vehicle);
+                self.vehicles[place] = Some(v);
+                return Ok(true);
+            }
+        } else {
+            return Err("Invalid name");
+        }
+    }
+
+    pub fn get(&self, name: String) -> Result<&Vehicle, &str> {
+        if let Ok(place) = usize::from_str_radix(name.split_at(1).0, 36) {
+            place -= 10;
+            if let Some(cell) = self.vehicles[place] {
+                for v in cell.iter() {
+                    if v.name == name {
+                        return Ok(v);
+                    }
+                }
+                return Err("No such vehicle");
+            } else { return Err("No such vehicle"); }
+        } else {
+            return Err("Invalid name");
+        }
+    }
+}
