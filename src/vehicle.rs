@@ -1,5 +1,6 @@
 use crate::datastructures::Queue;
 use crate::customer::Customer;
+use crate::consts::*;
 
 
 pub struct Vehicle {
@@ -16,7 +17,6 @@ pub struct Vehicle {
 }
 
 const NO_CUSTOMER: Option<crate::customer::Customer> = None;
-const MOVE_TIME: usize = 10;
 
 impl Vehicle {
     pub fn new(number: usize, name: String, max_capacity: usize, min_capacity: usize, price: usize, time_per_round: usize) -> Self {
