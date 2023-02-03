@@ -1,38 +1,37 @@
 use crate::vehicle::Vehicle;
 use crate::customer::Customer;
 
-const MAX_QUEUE_CAPACITY: usize = 100;
 
-pub struct Queue<T> {
-    items: [Option<T>; MAX_QUEUE_CAPACITY],
+pub struct CustomerQueue {
+    items: Vec<Option<Customer>>,
     pointer: usize,
 }
 
 
-impl Queue<T> {
-    pub fn new<T>() -> Self {
-        const NO_ITEM: Option<T> = None;
-        Queue {
-            items: [NO_ITEM; MAX_QUEUE_CAPACITY],
+impl CustomerQueue {
+    pub fn new(size: usize) -> Self {
+        const NO_ITEM: Option<Customer> = None;
+        CustomerQueue {
+            items: (0..size).map(|_| NO_ITEM).collect(),
             pointer: 0,
         }
     }
-    pub fn enqueue<T>(&mut self, item: T) -> Result<usize, &str> {
+    pub fn enqueue(&mut self, item: Customer) -> Result<usize, &str> {
         let pointer = self.pointer;
-        if pointer == MAX_QUEUE_CAPACITY - 1 {
+        if pointer == self.items.len() - 1 {
             return Err("Capacity full");
         }
         self.items[pointer] = Some(item);
         self.pointer += 1;
-        Ok(MAX_QUEUE_CAPACITY - self.pointer)
+        Ok(self.items.len() - self.pointer)
     }
 
-    pub fn dequeue<T>(&mut self) -> Result<T, &str> {
+    pub fn dequeue(&mut self) -> Result<Customer, &str> {
         let pointer = self.pointer;
-        if let Some(item) = self.items[pointer - 1] {
+        if let Some(item) = &self.items[pointer - 1] {
             self.items[pointer - 1] = None;
             self.pointer -= 1;
-            return Ok(item);
+            return Ok(*item);
         } else {
             return Err("Queue empty");
         }
@@ -43,7 +42,7 @@ impl Queue<T> {
     }
 
     pub fn empty(&mut self) {
-        for i in 0..MAX_QUEUE_CAPACITY {
+        for i in 0..self.items.len() {
             self.items[i] = None;
         }
     }
@@ -62,9 +61,9 @@ impl VehicleSet {
     }
 
     pub fn add(&mut self, vehicle: Vehicle) -> Result<bool, &str> {
-        if let Ok(place) = usize::from_str_radix(vehicle.name.split_at(1).0, 36) {
+        if let Ok(mut place) = usize::from_str_radix(vehicle.name.split_at(1).0, 36) {
             place -= 10;
-            if let Some(cell) = self.vehicles[place] {
+            if let Some(cell) = &mut self.vehicles[place] {
                 let mut in_there: bool = false;
                 for v in cell.iter() {
                     if v.name == vehicle.name {
@@ -88,11 +87,11 @@ impl VehicleSet {
         }
     }
 
-    pub fn get(&self, name: String) -> Result<&Vehicle, &str> {
-        if let Ok(place) = usize::from_str_radix(name.split_at(1).0, 36) {
+    pub fn get(&mut self, name: String) -> Result<&Vehicle, &str> {
+        if let Ok(mut place) = usize::from_str_radix(name.split_at(1).0, 36) {
             place -= 10;
-            if let Some(cell) = self.vehicles[place] {
-                for v in cell.iter() {
+            if let Some(cell) = &mut self.vehicles[place] {
+                for v in cell.iter_mut() {
                     if v.name == name {
                         return Ok(v);
                     }

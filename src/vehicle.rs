@@ -1,4 +1,4 @@
-use crate::datastructures::Queue;
+use crate::datastructures::CustomerQueue;
 use crate::customer::Customer;
 use crate::consts::*;
 
@@ -13,7 +13,7 @@ pub struct Vehicle {
     pub time_per_round: usize,
     pub onboard: Vec<Option<Customer>>,
     pub number_of_onboard_customers: usize,
-    queue: Queue<Customer>,
+    queue: CustomerQueue,
 }
 
 const NO_CUSTOMER: Option<crate::customer::Customer> = None;
@@ -30,7 +30,7 @@ impl Vehicle {
             time_per_round,
             onboard: (0..max_capacity).map(|_| None).collect(),
             number_of_onboard_customers: 0,
-            queue: Queue::new(),
+            queue: CustomerQueue::new(max_capacity*2),
         }
     }
 
