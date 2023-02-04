@@ -1,5 +1,5 @@
 #[derive(Clone)]
 pub struct Customer {
-    code: usize,
-    vehicles: Vec<usize>,
+    pub code: usize,
+    pub vehicles: Vec<usize>,
 }

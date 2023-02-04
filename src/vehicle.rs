@@ -50,7 +50,7 @@ impl Vehicle {
         }
     }
 
-    pub fn add_customer(&mut self, customer: Customer) -> Result<usize, &str> {
+    pub fn add_customer(&mut self, customer: &Customer) -> Result<usize, &str> {
         if self.queue.elements_n() >= self.max_capacity {
             return Err("No space left on vehicle");
         }

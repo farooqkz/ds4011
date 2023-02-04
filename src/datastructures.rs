@@ -3,20 +3,20 @@ use crate::customer::Customer;
 
 
 pub struct CustomerQueue {
-    items: Vec<Option<Customer>>,
+    items: Vec<Option<&Customer>>,
     pointer: usize,
 }
 
 
 impl CustomerQueue {
     pub fn new(size: usize) -> Self {
-        const NO_ITEM: Option<Customer> = None;
+        const NO_ITEM: Option<&Customer> = None;
         CustomerQueue {
             items: (0..size).map(|_| NO_ITEM).collect(),
             pointer: 0,
         }
     }
-    pub fn enqueue(&mut self, item: Customer) -> Result<usize, &str> {
+    pub fn enqueue(&mut self, item: &Customer) -> Result<usize, &str> {
         let pointer = self.pointer;
         if pointer == self.items.len() - 1 {
             return Err("Capacity full");
@@ -26,7 +26,7 @@ impl CustomerQueue {
         Ok(self.items.len() - self.pointer)
     }
 
-    pub fn dequeue(&mut self) -> Result<Customer, &str> {
+    pub fn dequeue(&mut self) -> Result<&Customer, &str> {
         let pointer = self.pointer;
         if let Some(item) = self.items[pointer - 1].take() {
             self.pointer -= 1;
@@ -50,7 +50,7 @@ impl CustomerQueue {
 pub struct VehicleSet {
     vehicles: Vec<Option<Vec<Vehicle>>>,
     vehicles_by_number: Vec<Option<&Vehicle>>,
-    len: usize,
+    pub len: usize,
 }
 
 impl VehicleSet {
@@ -151,9 +151,9 @@ impl CustomerMap {
     }
 
     pub fn get(&self, code: usize) -> Option<&Customer> {
-        if let Some(customer) = &self.table1[self.hash1(code)] {
+        if let Some(customer) = &mut self.table1[self.hash1(code)] {
             return Some(customer);
-        } else if let Some(customer) = &self.table2[self.hash2(code)] {
+        } else if let Some(customer) = &mut self.table2[self.hash2(code)] {
             return Some(customer);
         } else {
             return None;
