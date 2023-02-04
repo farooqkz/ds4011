@@ -1,4 +1,5 @@
+#[derive(Clone)]
 pub struct Customer {
-    code: String,
+    code: usize,
     vehicles: Vec<usize>,
 }

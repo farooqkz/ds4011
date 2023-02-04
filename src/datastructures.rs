@@ -28,10 +28,9 @@ impl CustomerQueue {
 
     pub fn dequeue(&mut self) -> Result<Customer, &str> {
         let pointer = self.pointer;
-        if let Some(item) = &self.items[pointer - 1] {
-            self.items[pointer - 1] = None;
+        if let Some(item) = self.items[pointer - 1].take() {
             self.pointer -= 1;
-            return Ok(*item);
+            return Ok(item);
         } else {
             return Err("Queue empty");
         }
@@ -50,13 +49,18 @@ impl CustomerQueue {
 
 pub struct VehicleSet {
     vehicles: Vec<Option<Vec<Vehicle>>>,
+    vehicles_by_number: Vec<Option<&Vehicle>>,
+    len: usize,
 }
 
 impl VehicleSet {
     pub fn new() -> Self {
         const NOTHING: Option<Vec<Vehicle>> = None;
+        const ANOTHER_NOTHING: Option<&Vehicle> = None;
         VehicleSet {
             vehicles: (0..26).map(|_| NOTHING).collect(),
+            vehicles_by_number: (0..5).map(|_| ANOTHER_NOTHING).collect(),
+            len: 0,
         }
     }
 
@@ -74,12 +78,25 @@ impl VehicleSet {
                     return Ok(false);
                 } else {
                     cell.push(vehicle);
+                    if vehicle.number <= self.vehicles_by_number.len() {
+                        if self.vehicles_by_number[vehicle.number].is_some() {
+                            return Err("Duplicate number");
+                        } else {
+                            self.vehicles_by_number[vehicle.number] = Some(&vehicle);
+                        }
+                    } else {
+                        const ANOTHER_NOTHING: Option<&Vehicle> = None;
+                        self.vehicles_by_number.append(&mut (self.vehicles_by_number.len()..vehicle.number).map(|_| ANOTHER_NOTHING).collect());
+                        self.vehicles_by_number[vehicle.number] = Some(&vehicle);
+                    }
+                    self.len += 1;
                     return Ok(true);
                 }
             } else {
                 let mut v: Vec<Vehicle> = vec![];
                 v.push(vehicle);
                 self.vehicles[place] = Some(v);
+                self.len += 1;
                 return Ok(true);
             }
         } else {
@@ -100,6 +117,72 @@ impl VehicleSet {
             } else { return Err("No such vehicle"); }
         } else {
             return Err("Invalid name");
+        }
+    }
+
+    pub fn get_by_number(&self, number: usize) -> Result<&Vehicle, &str> {
+        match self.vehicles_by_number[number] {
+            Some(v) => { return Ok(v); },
+            None => { return Err("Invalid number"); }
+        }
+    }
+}
+
+pub struct CustomerMap {
+    table1: Vec<Option<&Customer>>,
+    table2: Vec<Option<&Customer>>
+}
+
+impl CustomerMap {
+    pub fn new(size: usize) -> Self {
+        const NO_CUSTOMER: Option<&Customer> = None;
+        CustomerMap {
+            table1: (0..2 << size).map(|_| NO_CUSTOMER).collect(),
+            table2: (0..2 << (size - 1)).map(|_| NO_CUSTOMER).collect()
+        }
+    }
+    
+    fn hash1(&self, code: usize) -> usize {
+        return code % self.table1.len();
+    }
+
+    fn hash2(&self, code: usize) -> usize {
+        return code % self.table2.len();
+    }
+
+    pub fn get(&self, code: usize) -> Option<&Customer> {
+        if let Some(customer) = &self.table1[self.hash1(code)] {
+            return Some(customer);
+        } else if let Some(customer) = &self.table2[self.hash2(code)] {
+            return Some(customer);
+        } else {
+            return None;
+        }
+    }
+
+    pub fn add(&self, code: usize, customer: &Customer) -> bool {
+        if self.get(code).is_some() { return false; }
+        let h1 = self.hash1(code);
+        let h2 = self.hash2(code);
+        loop {
+            if self.table1[h1].is_none() {
+                self.table1[h1] = Some(customer);
+                return true;
+            }
+            let customer = {
+                let t = self.table1[h1];
+                self.table1[h1] = Some(customer);
+                t
+            };
+            if self.table2[h2].is_none() {
+                self.table2[h2] = customer;
+                return true;
+            }
+            let customer = {
+                let t = self.table2[h2];
+                self.table2[h2] = customer;
+                t
+            };
         }
     }
 }

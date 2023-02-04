@@ -4,7 +4,7 @@ use crate::consts::*;
 
 
 pub struct Vehicle {
-    number: usize,
+    pub number: usize,
     pub name: String,
     max_capacity: usize,
     min_capacity: usize,
@@ -33,8 +33,24 @@ impl Vehicle {
             queue: CustomerQueue::new(max_capacity*2),
         }
     }
+    
+    pub fn new_from_string(s: String, number: usize) -> Self {
+        let s: Vec<&str> = s.split(",").map(|part| part.trim()).collect();
+        let max_capacity = usize::from_str_radix(s[1], 10);
+        let min_capacity = usize::from_str_radix(s[2], 10);
+        let time_per_round = usize::from_str_radix(s[3], 10);
+        let price = usize::from_str_radix(s[4], 10);
+        match (max_capacity, min_capacity, time_per_round, price) {
+            (Ok(max_capacity), Ok(min_capacity), Ok(time_per_round), Ok(price)) => {
+                return Self::new(number, s[0].to_string(), max_capacity, min_capacity, price, time_per_round);
+            },
+            _ => {
+                panic!("Invalid parameters");
+            }
+        }
+    }
 
-    pub fn add_customer(&mut self, customer: crate::customer::Customer) -> Result<usize, &str> {
+    pub fn add_customer(&mut self, customer: Customer) -> Result<usize, &str> {
         if self.queue.elements_n() >= self.max_capacity {
             return Err("No space left on vehicle");
         }
@@ -46,7 +62,7 @@ impl Vehicle {
         if self.queue.elements_n() < self.min_capacity {
             return Err("No enough customers");
         }
-        let t: usize = self.queue.elements_n() * (VEHICLE_GET_OFF_TIME + VEHICLE_GET_ON_TIME);
+        let t: usize = self.queue.elements_n() * (VEHICLE_GET_OFF_TIME + VEHICLE_GET_ON_TIME) + self.time_per_round;
         self.queue.empty();
         Ok(t)
     }
